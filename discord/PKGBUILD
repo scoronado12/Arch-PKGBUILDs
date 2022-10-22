@@ -1,0 +1,43 @@
+# Maintainer: Filipe Laíns (FFY00) <lains@archlinux.org>
+# Maintainer: Morgan <morganamilo@archlinux.org>
+# Maintainer: Stefano Coronado <stefanocorona12@gmail.com>
+
+pkgname=discord
+_pkgname=Discord
+pkgver=0.0.21
+pkgrel=1
+pkgdesc="All-in-one voice and text chat for gamers that's free and secure."
+arch=('x86_64')
+url='https://discordapp.com'
+license=('custom')
+depends=('libnotify' 'libxss' 'nspr' 'nss' 'gtk3')
+optdepends=('libpulse: Pulseaudio support'
+            'xdg-utils: Open files')
+source=("https://dl.discordapp.net/apps/linux/$pkgver/$pkgname-$pkgver.tar.gz")
+sha512sums=('149ae5b8b7d92549e12eca52e45d3f5761ef022ae321cf33fadc3b56c4cee0616a5166380faea038256213713a7aa90e1befc4caa3e6a4de8e15c1cb1d8f925d')
+
+prepare() {
+  cd $_pkgname
+
+  sed -i "s|Exec=.*|Exec=/usr/bin/$pkgname|" $pkgname.desktop
+  echo 'Path=/usr/bin' >> $pkgname.desktop
+}
+
+package() {
+  # Install the app
+  install -d "$pkgdir"/opt/$pkgname
+  cp -a $_pkgname/. "$pkgdir"/opt/$pkgname
+
+  chmod 755 "$pkgdir"/opt/$pkgname/$_pkgname
+
+  rm "$pkgdir"/opt/$pkgname/postinst.sh
+
+  install -d "$pkgdir"/usr/{bin,share/{pixmaps,applications}}
+  ln -s /opt/$pkgname/$_pkgname "$pkgdir"/usr/bin/$pkgname
+  ln -s /opt/$pkgname/discord.png "$pkgdir"/usr/share/pixmaps/$pkgname.png
+  ln -s /opt/$pkgname/$pkgname.desktop "$pkgdir"/usr/share/applications/$pkgname.desktop
+
+  # setuid on chrome-sandbox
+  chmod u+s "$pkgdir"/opt/$pkgname/chrome-sandbox
+}
+
